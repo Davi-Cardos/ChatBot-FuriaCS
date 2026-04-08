@@ -20,4 +20,15 @@ class Pergunta(BaseModel):
 @app.post("/pergunta")
 def responder(pergunta: Pergunta):
     resposta = db.similarity_search(pergunta.pergunta)
-    return {"resposta": resposta[0].page_content}
+    contexto = resposta[0].page_content if resposta else ""
+    
+    prompt = f"""
+    Use o contexto abaixo para responder:
+
+    {contexto}
+
+    Pergunta: {pergunta.pergunta}
+    """
+    response = llm.invoke(prompt)
+
+    return {"answer": response}
